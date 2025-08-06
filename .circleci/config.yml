@@ -1,0 +1,33 @@
+tag-pattern: &tag-pattern
+  only: /^\d+\.\d+\.\d+$/
+
+version: 2.1
+
+jobs:
+  deploy:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - checkout
+      - run:
+          name: Package
+          command: make package
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "dist"
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - deploy:
+          context: org-global
+          requires:
+            - lint
+            - tests
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              <<: *tag-pattern
